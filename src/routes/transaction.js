@@ -1,0 +1,10 @@
+const { Router } = require('express');
+const txController = require('../controllers/transactionController');
+const router = Router();
+router.post('/initiate', txController.initiate);
+router.get('/all', txController.getAll);
+router.get('/user/:user_id', txController.getByUser);
+router.get('/user/:user_id/upcoming', txController.getUpcoming);
+router.get('/:id', txController.getById);
+router.post('/pay', txController.makePayment);
+module.exports = router;

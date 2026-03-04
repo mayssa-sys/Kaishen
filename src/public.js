@@ -1,98 +1,349 @@
+const { COLORS, LOGO_SVG, LOGO_ICON_SVG } = require('./assets/brand');
+
 const html = `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Kaishen — MVP Demo</title>
+<title>Kaishen — Lebanon's First AI-Driven BNPL</title>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,${encodeURIComponent(LOGO_ICON_SVG.replace(/\n/g,'').trim())}">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#0a0a23;color:#fff;min-height:100vh}
-.header{text-align:center;padding:20px;border-bottom:1px solid #1a1a3e}
-.header h1{color:#00d4aa;font-size:28px}
-.header p{color:#888;font-size:13px;margin-top:4px}
-.mvp-badge{display:inline-block;background:#ff6b6b;color:#fff;padding:2px 8px;border-radius:3px;font-size:11px;margin-top:6px}
-.tabs{display:flex;flex-wrap:wrap;gap:4px;padding:10px;background:#0f0f2d;justify-content:center}
-.tab{padding:8px 14px;background:#1a1a3e;border:1px solid #333;border-radius:4px;cursor:pointer;color:#aaa;font-size:13px;font-weight:600}
-.tab.active{background:#00d4aa;color:#0a0a23;border-color:#00d4aa}
-.panel{display:none;padding:20px;max-width:600px;margin:0 auto}
-.panel.active{display:block}
-input,select{width:100%;padding:10px;margin:4px 0 12px;border:1px solid #333;border-radius:5px;background:#1a1a3e;color:#fff;font-size:14px}
-label{color:#ddd;font-size:13px;font-weight:600}
-button{width:100%;padding:14px;background:#00d4aa;color:#0a0a23;border:none;border-radius:5px;font-size:16px;cursor:pointer;font-weight:bold;margin-top:5px}
-button:hover{background:#00b894}
-button.secondary{background:#1a1a3e;color:#00d4aa;border:1px solid #00d4aa}
-button.secondary:hover{background:#00d4aa;color:#0a0a23}
-.result{margin-top:15px;padding:15px;border-radius:5px;display:none;font-size:14px;line-height:1.6}
-.result.show{display:block}
-.excellent{background:#00b894}.good{background:#00cec9}.fair{background:#fdcb6e;color:#333}.poor{background:#e17055}.reject{background:#d63031}
-.verified{background:#00b894}.rejected{background:#d63031}
-.info{background:#1a1a3e;border:1px solid #333}
-.success{background:#00b894}
-.card{background:#1a1a3e;border:1px solid #333;border-radius:5px;padding:15px;margin:10px 0}
-.card h3{color:#00d4aa;margin-bottom:8px;font-size:15px}
-.row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #222;font-size:13px}
-.row:last-child{border:none}
-.check.pass{color:#00d4aa}.check.fail{color:#ff6b6b}
-h2.section{color:#00d4aa;font-size:18px;margin-bottom:15px}
-.step{background:#1a1a3e;border-left:3px solid #00d4aa;padding:10px 15px;margin:8px 0;border-radius:0 5px 5px 0}
-.step.done{border-left-color:#00b894;opacity:0.7}
-.step.current{border-left-color:#fdcb6e}
-.schedule-item{display:flex;justify-content:space-between;align-items:center;padding:10px;margin:5px 0;background:#1a1a3e;border-radius:5px;font-size:13px}
-.schedule-item.paid{border-left:3px solid #00b894}
-.schedule-item.upcoming{border-left:3px solid #fdcb6e}
-.badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:bold}
-.badge.paid{background:#00b894;color:#fff}
-.badge.upcoming{background:#fdcb6e;color:#333}
-.badge.active{background:#00cec9;color:#333}
-.stat{text-align:center;padding:10px}
-.stat .num{font-size:28px;color:#00d4aa;font-weight:bold}
-.stat .lbl{font-size:12px;color:#888}
-.stats-row{display:flex;justify-content:space-around;margin:15px 0}
+:root {
+  --primary: ${COLORS.primary};
+  --secondary: ${COLORS.secondary};
+  --accent: ${COLORS.accent};
+  --surface: ${COLORS.surface};
+  --muted: ${COLORS.muted};
+  --text: ${COLORS.text};
+  --text-dim: ${COLORS.textDim};
+  --success: ${COLORS.success};
+  --warning: ${COLORS.warning};
+  --danger: ${COLORS.danger};
+  --gold-grad: linear-gradient(135deg, #C9A84C 0%, #E8D48B 50%, #C9A84C 100%);
+  --navy-grad: linear-gradient(180deg, #0B1D3A 0%, #111B2E 100%);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+  --font: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  background: var(--navy-grad);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.header {
+  text-align: center;
+  padding: 28px 20px 22px;
+  background: var(--primary);
+  border-bottom: 1px solid rgba(201,168,76,0.15);
+  position: relative;
+}
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--gold-grad);
+  opacity: 0.5;
+}
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+.logo-icon { width: 48px; height: 48px; }
+.logo-icon svg { width: 100%; height: 100%; }
+.header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  background: var(--gold-grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.header .tagline {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+.mvp-badge {
+  display: inline-block;
+  background: rgba(201,168,76,0.15);
+  color: var(--secondary);
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-top: 8px;
+  border: 1px solid rgba(201,168,76,0.3);
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 12px 10px;
+  background: rgba(11,29,58,0.8);
+  justify-content: center;
+  border-bottom: 1px solid rgba(58,74,107,0.3);
+}
+.tab {
+  padding: 9px 16px;
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+.tab:hover { color: var(--text); border-color: var(--secondary); }
+.tab.active {
+  background: var(--gold-grad);
+  color: var(--primary);
+  border-color: transparent;
+}
+.panel { display: none; padding: 24px 20px; max-width: 620px; margin: 0 auto; }
+.panel.active { display: block; }
+label {
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: block;
+  margin-bottom: 4px;
+}
+input, select {
+  width: 100%;
+  padding: 11px 14px;
+  margin-bottom: 14px;
+  border: 1px solid var(--muted);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font);
+  transition: border-color 0.2s;
+}
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+}
+input::placeholder { color: var(--muted); }
+button {
+  width: 100%;
+  padding: 14px;
+  background: var(--gold-grad);
+  color: var(--primary);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+button.secondary {
+  background: transparent;
+  color: var(--secondary);
+  border: 1px solid var(--secondary);
+  box-shadow: none;
+}
+button.secondary:hover {
+  background: rgba(201,168,76,0.1);
+  transform: none;
+}
+.result {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  display: none;
+  font-size: 14px;
+  line-height: 1.7;
+  box-shadow: var(--shadow-sm);
+}
+.result.show { display: block; }
+.excellent { background: var(--success); color: #fff; }
+.good { background: #0891b2; color: #fff; }
+.fair { background: var(--warning); color: var(--primary); }
+.poor { background: #e07040; color: #fff; }
+.reject { background: var(--danger); color: #fff; }
+.verified { background: var(--success); color: #fff; }
+.rejected { background: var(--danger); color: #fff; }
+.info { background: var(--surface); border: 1px solid var(--muted); }
+.success { background: var(--success); color: #fff; }
+.card {
+  background: var(--surface);
+  border: 1px solid rgba(58,74,107,0.4);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin: 10px 0;
+  box-shadow: var(--shadow-sm);
+}
+.card h3 {
+  color: var(--secondary);
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(58,74,107,0.3);
+  font-size: 13px;
+}
+.row:last-child { border: none; }
+.check.pass { color: var(--success); }
+.check.fail { color: var(--danger); }
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.badge.paid { background: var(--success); color: #fff; }
+.badge.upcoming { background: var(--warning); color: var(--primary); }
+.badge.active { background: var(--accent); color: var(--primary); }
+h2.section {
+  color: var(--secondary);
+  font-size: 20px;
+  margin-bottom: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.step {
+  background: var(--surface);
+  border-left: 3px solid var(--secondary);
+  padding: 14px 18px;
+  margin: 10px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  box-shadow: var(--shadow-sm);
+}
+.step strong { color: var(--text); }
+.step.done { border-left-color: var(--success); opacity: 0.6; }
+.step.current { border-left-color: var(--warning); }
+.schedule-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  margin: 5px 0;
+  background: var(--surface);
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+.schedule-item.paid { border-left: 3px solid var(--success); }
+.schedule-item.upcoming { border-left: 3px solid var(--warning); }
+.stat { text-align: center; padding: 12px; }
+.stat .num {
+  font-size: 30px;
+  font-weight: 700;
+  background: var(--gold-grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.stat .lbl { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+.stats-row {
+  display: flex;
+  justify-content: space-around;
+  margin: 16px 0;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 8px 0;
+  border: 1px solid rgba(58,74,107,0.3);
+}
+.footer {
+  text-align: center;
+  padding: 20px;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  border-top: 1px solid rgba(58,74,107,0.2);
+  margin-top: 40px;
+}
+.footer a { color: var(--secondary); text-decoration: none; }
+@media (max-width: 480px) {
+  .header h1 { font-size: 24px; letter-spacing: 4px; }
+  .logo-icon { width: 38px; height: 38px; }
+  .tabs { gap: 3px; padding: 8px 6px; }
+  .tab { padding: 7px 10px; font-size: 12px; }
+  .stats-row { flex-wrap: wrap; }
+  .stat { flex: 0 0 50%; }
+}
 </style>
 </head>
 <body>
+
 <div class="header">
-<h1>KAISHEN</h1>
-<p>Lebanon's First AI-Driven BNPL Platform</p>
-<div class="mvp-badge">MVP DEMO — Mock Data</div>
+  <div class="logo-container">
+    <div class="logo-icon">${LOGO_SVG.replace(/\n/g,'').trim()}</div>
+    <h1>KAISHEN</h1>
+  </div>
+  <div class="tagline">Lebanon's First AI-Driven BNPL Platform</div>
+  <div class="mvp-badge">MVP DEMO &mdash; MOCK DATA</div>
 </div>
+
 <div class="tabs">
-<div class="tab active" onclick="showTab('demo')">Full Demo</div>
-<div class="tab" onclick="showTab('score')">Trust Score</div>
-<div class="tab" onclick="showTab('kyc')">eKYC</div>
-<div class="tab" onclick="showTab('merchant')">Merchant</div>
-<div class="tab" onclick="showTab('admin')">Admin</div>
+  <div class="tab active" onclick="showTab('demo')">Full Demo</div>
+  <div class="tab" onclick="showTab('score')">Trust Score</div>
+  <div class="tab" onclick="showTab('kyc')">eKYC</div>
+  <div class="tab" onclick="showTab('merchant')">Merchant</div>
+  <div class="tab" onclick="showTab('admin')">Admin</div>
 </div>
 
 <!-- FULL DEMO -->
 <div id="demo-panel" class="panel active">
 <h2 class="section">Complete BNPL Flow</h2>
-<p style="color:#888;font-size:13px;margin-bottom:15px">Walk through the entire Kaishen experience: Register → Verify Identity → Get Score → Shop → Pay in 3</p>
+<p style="color:var(--text-dim);font-size:13px;margin-bottom:16px">Walk through the entire Kaishen experience: Register &rarr; Verify &rarr; Score &rarr; Shop &rarr; Pay in 3</p>
 
 <div class="step" id="step1">
 <strong>Step 1: Register</strong>
-<div style="margin-top:8px">
+<div style="margin-top:10px">
 <label>Full Name</label><input id="d-name" placeholder="Ahmad Khalil">
 <label>Phone</label><input id="d-phone" placeholder="+9611234567">
-<button onclick="demoRegister()">Register & Get OTP</button>
+<button onclick="demoRegister()">Register &amp; Get OTP</button>
 </div>
 </div>
 <div id="d-otp-step" style="display:none" class="step">
 <strong>Step 2: Verify OTP</strong>
-<div style="margin-top:8px">
+<div style="margin-top:10px">
 <label>Enter OTP</label><input id="d-otp" placeholder="6-digit code">
 <button onclick="demoVerifyOTP()">Verify</button>
 </div>
 </div>
 <div id="d-kyc-step" style="display:none" class="step">
 <strong>Step 3: Verify Identity (eKYC via iDAKTO)</strong>
-<div style="margin-top:8px">
-<p style="color:#888;font-size:12px;margin-bottom:8px">In the real app, you'd scan your Lebanese ID and take a selfie</p>
+<div style="margin-top:10px">
+<p style="color:var(--text-dim);font-size:12px;margin-bottom:10px">In the real app, you'd scan your Lebanese ID and take a selfie</p>
 <button onclick="demoKYC()">Scan National ID</button>
 </div>
 </div>
 <div id="d-score-step" style="display:none" class="step">
 <strong>Step 4: Get Trust Score</strong>
-<div style="margin-top:8px">
+<div style="margin-top:10px">
 <label>Monthly Income (USD)</label><input id="d-income" type="number" placeholder="1500">
 <label>Employment</label>
 <select id="d-employment"><option value="salaried">Salaried</option><option value="self_employed">Self Employed</option><option value="freelance">Freelance</option></select>
@@ -100,8 +351,8 @@ h2.section{color:#00d4aa;font-size:18px;margin-bottom:15px}
 </div>
 </div>
 <div id="d-shop-step" style="display:none" class="step">
-<strong>Step 5: Shop — Buy Today, Pay in 3</strong>
-<div style="margin-top:8px">
+<strong>Step 5: Shop &mdash; Buy Today, Pay in 3</strong>
+<div style="margin-top:10px">
 <label>Purchase Amount (USD)</label><input id="d-amount" type="number" placeholder="400">
 <label>Merchant</label><select id="d-merchant"></select>
 <button onclick="demoPurchase()">Pay with Kaishen</button>
@@ -117,7 +368,7 @@ h2.section{color:#00d4aa;font-size:18px;margin-bottom:15px}
 <label>Phone</label><input id="s-phone" placeholder="+9611234567">
 <label>Monthly Income (USD)</label><input id="s-income" type="number" placeholder="1500">
 <label>Employment Type</label>
-<select id="s-employment"><option value="">-- Select --</option><option value="salaried">Salaried</option><option value="self_employed">Self Employed</option><option value="freelance">Freelance</option></select>
+<select id="s-employment"><option value="">&mdash; Select &mdash;</option><option value="salaried">Salaried</option><option value="self_employed">Self Employed</option><option value="freelance">Freelance</option></select>
 <button onclick="getScore()">Calculate Trust Score</button>
 <div id="score-result" class="result"></div>
 </div>
@@ -125,7 +376,7 @@ h2.section{color:#00d4aa;font-size:18px;margin-bottom:15px}
 <!-- eKYC -->
 <div id="kyc-panel" class="panel">
 <h2 class="section">eKYC Identity Verification</h2>
-<p style="color:#888;font-size:13px;margin-bottom:15px">Powered by iDAKTO — Government-grade ID verification</p>
+<p style="color:var(--text-dim);font-size:13px;margin-bottom:16px">Powered by iDAKTO &mdash; Government-grade ID verification</p>
 <label>Full Name</label><input id="k-name" placeholder="Ahmad Khalil">
 <label>Document Type</label>
 <select id="k-doctype"><option value="national_id">Lebanese National ID</option><option value="passport">Passport</option><option value="driving_license">Driving License</option></select>
@@ -151,17 +402,21 @@ h2.section{color:#00d4aa;font-size:18px;margin-bottom:15px}
 <!-- ADMIN -->
 <div id="admin-panel" class="panel">
 <h2 class="section">Admin Dashboard</h2>
-<button onclick="loadAdmin()" class="secondary" style="margin-bottom:15px">Refresh Data</button>
+<button onclick="loadAdmin()" class="secondary" style="margin-bottom:16px">Refresh Data</button>
 <div id="admin-stats"></div>
 <div id="admin-transactions"></div>
+</div>
+
+<div class="footer">
+  &copy; 2026 <a href="mailto:hello@kaishen.com">Kaishen</a> &mdash; Buy Today, Pay in 3 &middot; 0% Interest &middot; Sharia-Compliant
 </div>
 
 <script>
 var state={user:null,token:null,merchants:[]};
 
 function showTab(t){
-document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
-document.querySelectorAll('.panel').forEach(e=>e.classList.remove('active'));
+document.querySelectorAll('.tab').forEach(function(e){e.classList.remove('active')});
+document.querySelectorAll('.panel').forEach(function(e){e.classList.remove('active')});
 document.getElementById(t+'-panel').classList.add('active');
 event.target.classList.add('active');
 if(t==='merchant')loadMerchants();
@@ -176,7 +431,6 @@ var r=await fetch('/api/v1'+path,opts);
 return r.json();
 }
 
-// DEMO FLOW
 async function demoRegister(){
 var r=await api('/auth/register','POST',{phone:document.getElementById('d-phone').value,full_name:document.getElementById('d-name').value});
 if(r.error){showResult('d-result','Error: '+r.error,'info');return}
@@ -197,10 +451,10 @@ async function demoKYC(){
 var r=await api('/kyc/verify','POST',{user_id:state.user.id,full_name:state.user.full_name,document_type:'national_id'});
 if(r.status==='verified'){
 state.user.kyc_status='verified';
-var checks='';Object.entries(r.checks).forEach(function(c){checks+='<span class="check '+(c[1]?'pass':'fail')+'">'+(c[1]?'✅':'❌')+' '+c[0].replace(/_/g,' ')+'</span> ';});
+var checks='';Object.entries(r.checks).forEach(function(c){checks+='<span class="check '+(c[1]?'pass':'fail')+'">'+(c[1]?'\\u2705':'\\u274C')+' '+c[0].replace(/_/g,' ')+'</span> ';});
 document.getElementById('d-kyc-step').classList.add('done');
 document.getElementById('d-score-step').style.display='block';
-showResult('d-result','<strong>Identity Verified ✅</strong><br>'+checks,'success');
+showResult('d-result','<strong>Identity Verified \\u2705</strong><br>'+checks,'success');
 }else{showResult('d-result','Verification failed. Please try again.','reject');}
 }
 async function demoScore(){
@@ -209,7 +463,7 @@ state.user.trust_score=r.trust_score;state.user.credit_limit=r.band.max_credit_u
 document.getElementById('d-score-step').classList.add('done');
 document.getElementById('d-shop-step').style.display='block';
 await loadMerchantDropdown();
-showResult('d-result','<strong>Trust Score: '+r.trust_score+'/100</strong> — '+r.band.label.toUpperCase()+'<br>Credit Limit: <strong>$'+r.band.max_credit_usd+'</strong>',r.band.label);
+showResult('d-result','<strong>Trust Score: '+r.trust_score+'/100</strong> \\u2014 '+r.band.label.toUpperCase()+'<br>Credit Limit: <strong>$'+r.band.max_credit_usd+'</strong>',r.band.label);
 }
 async function loadMerchantDropdown(){
 var ms=await api('/merchants');state.merchants=ms;
@@ -226,63 +480,58 @@ var amt=Number(document.getElementById('d-amount').value);
 var mid=document.getElementById('d-merchant').value;
 var r=await api('/transactions/initiate','POST',{user_id:state.user.id,merchant_id:mid,amount:amt});
 if(r.error){showResult('d-result','Error: '+r.error,'info');return}
-var html='<h3 style="margin-bottom:10px">Purchase Approved! ✅</h3>';
+var html='<h3 style="margin-bottom:10px">Purchase Approved! \\u2705</h3>';
 html+='<div class="row"><span>Total</span><strong>$'+r.amount_usd+'</strong></div>';
 html+='<div class="row"><span>Down Payment (25%)</span><strong>$'+r.down_payment+'</strong></div>';
 html+='<div class="row"><span>Remaining (3 installments)</span><strong>$'+r.remaining+'</strong></div>';
 html+='<div style="margin-top:12px"><strong>Payment Schedule:</strong></div>';
 r.installment_plan.forEach(function(p){
-html+='<div class="schedule-item '+(p.status==='paid'?'paid':'upcoming')+'"><span>#'+p.number+' — '+p.due_date+' — $'+p.amount+'</span><span class="badge '+p.status+'">'+p.status.toUpperCase()+'</span></div>';
+html+='<div class="schedule-item '+(p.status==='paid'?'paid':'upcoming')+'"><span>#'+p.number+' \\u2014 '+p.due_date+' \\u2014 $'+p.amount+'</span><span class="badge '+p.status+'">'+p.status.toUpperCase()+'</span></div>';
 });
-html+='<div style="margin-top:10px;font-size:12px;color:#888">Merchant payout: $'+r.merchant.payout+' (after commission)</div>';
+html+='<div style="margin-top:10px;font-size:12px;color:var(--text-dim)">Merchant payout: $'+r.merchant.payout+' (after commission)</div>';
 document.getElementById('d-shop-step').classList.add('done');
 showResult('d-result',html,'info');
 }
 
-// TRUST SCORE
 async function getScore(){
 var r=await api('/score','POST',{user_id:'web-'+Date.now(),full_name:document.getElementById('s-name').value,phone:document.getElementById('s-phone').value,monthly_income:Number(document.getElementById('s-income').value)||0,employment_type:document.getElementById('s-employment').value});
 if(r.error){showResult('score-result','Error: '+r.error,'info');return}
-showResult('score-result','<h3>Trust Score: '+r.trust_score+'/100</h3><p>Band: <strong>'+r.band.label.toUpperCase()+'</strong> — Max Credit: <strong>$'+r.band.max_credit_usd+'</strong></p><p style="font-size:12px;margin-top:8px;opacity:0.8">Base: '+r.breakdown.base_score+' | Completeness: +'+r.breakdown.completeness_bonus+' | Employment: +'+r.breakdown.employment_bonus+' | Income: +'+r.breakdown.income_bonus+'</p>',r.band.label);
+showResult('score-result','<h3>Trust Score: '+r.trust_score+'/100</h3><p>Band: <strong>'+r.band.label.toUpperCase()+'</strong> \\u2014 Max Credit: <strong>$'+r.band.max_credit_usd+'</strong></p><p style="font-size:12px;margin-top:8px;opacity:0.8">Base: '+r.breakdown.base_score+' | Completeness: +'+r.breakdown.completeness_bonus+' | Employment: +'+r.breakdown.employment_bonus+' | Income: +'+r.breakdown.income_bonus+'</p>',r.band.label);
 }
 
-// eKYC
 async function verifyKYC(){
 var r=await api('/kyc/verify','POST',{user_id:'web-'+Date.now(),full_name:document.getElementById('k-name').value,document_type:document.getElementById('k-doctype').value});
 if(r.error){showResult('kyc-result','Error: '+r.error,'info');return}
-var checks='';Object.entries(r.checks).forEach(function(c){checks+='<div class="check '+(c[1]?'pass':'fail')+'">'+(c[1]?'✅':'❌')+' '+c[0].replace(/_/g,' ')+'</div>';});
-showResult('kyc-result','<h3>Status: '+r.status.toUpperCase()+'</h3><p>Doc: '+r.document_type+' — '+r.extracted_data.document_number+'</p><p>Nationality: '+r.extracted_data.nationality+'</p><div style="margin-top:8px">'+checks+'</div>',r.status);
+var checks='';Object.entries(r.checks).forEach(function(c){checks+='<div class="check '+(c[1]?'pass':'fail')+'">'+(c[1]?'\\u2705':'\\u274C')+' '+c[0].replace(/_/g,' ')+'</div>';});
+showResult('kyc-result','<h3>Status: '+r.status.toUpperCase()+'</h3><p>Doc: '+r.document_type+' \\u2014 '+r.extracted_data.document_number+'</p><p>Nationality: '+r.extracted_data.nationality+'</p><div style="margin-top:8px">'+checks+'</div>',r.status);
 }
 
-// MERCHANT
 async function registerMerchant(){
 var r=await api('/merchants/register','POST',{business_name:document.getElementById('m-name').value,contact_name:document.getElementById('m-contact').value,phone:document.getElementById('m-phone').value,commission_rate:document.getElementById('m-rate').value||7});
 if(r.error){showResult('merchant-result','Error: '+r.error,'info');return}
-showResult('merchant-result','<h3>Merchant Registered ✅</h3><p><strong>'+r.business_name+'</strong></p><p>Commission: '+r.commission_rate+'%</p><p>QR Code: <code>'+r.qr_code+'</code></p><p>ID: <code style="font-size:11px">'+r.id+'</code></p>','success');
+showResult('merchant-result','<h3>Merchant Registered \\u2705</h3><p><strong>'+r.business_name+'</strong></p><p>Commission: '+r.commission_rate+'%</p><p>QR Code: <code>'+r.qr_code+'</code></p><p>ID: <code style="font-size:11px">'+r.id+'</code></p>','success');
 loadMerchants();
 }
 async function loadMerchants(){
 var ms=await api('/merchants');
 var el=document.getElementById('merchant-list');
-if(!ms.length){el.innerHTML='<p style="color:#888;margin-top:15px">No merchants registered yet.</p>';return}
-var html='<h3 style="color:#00d4aa;margin:15px 0 10px">Registered Merchants</h3>';
+if(!ms.length){el.innerHTML='<p style="color:var(--text-dim);margin-top:15px">No merchants registered yet.</p>';return}
+var html='<h3 style="color:var(--secondary);margin:16px 0 10px">Registered Merchants</h3>';
 ms.forEach(function(m){
 html+='<div class="card"><div class="row"><span>'+m.business_name+'</span><span class="badge active">'+m.status+'</span></div><div class="row"><span>Commission</span><span>'+m.commission_rate+'%</span></div><div class="row"><span>Transactions</span><span>'+m.total_transactions+'</span></div><div class="row"><span>Volume</span><span>$'+m.total_volume.toFixed(2)+'</span></div></div>';
 });
 el.innerHTML=html;
 }
 
-// ADMIN
 async function loadAdmin(){
 var txs=await api('/transactions/all');
 var ms=await api('/merchants');
 var totalVol=txs.reduce(function(s,t){return s+t.amount_usd},0);
 var totalComm=txs.reduce(function(s,t){return s+t.commission_amount},0);
-var active=txs.filter(function(t){return t.status==='active'}).length;
 var html='<div class="stats-row"><div class="stat"><div class="num">'+txs.length+'</div><div class="lbl">Transactions</div></div><div class="stat"><div class="num">$'+totalVol.toFixed(0)+'</div><div class="lbl">Volume</div></div><div class="stat"><div class="num">$'+totalComm.toFixed(0)+'</div><div class="lbl">Revenue</div></div><div class="stat"><div class="num">'+ms.length+'</div><div class="lbl">Merchants</div></div></div>';
 document.getElementById('admin-stats').innerHTML=html;
-var txHtml='<h3 style="color:#00d4aa;margin:10px 0">Recent Transactions</h3>';
-if(!txs.length)txHtml+='<p style="color:#888">No transactions yet. Run the Full Demo first!</p>';
+var txHtml='<h3 style="color:var(--secondary);margin:12px 0">Recent Transactions</h3>';
+if(!txs.length)txHtml+='<p style="color:var(--text-dim)">No transactions yet. Run the Full Demo first!</p>';
 txs.slice(-10).reverse().forEach(function(t){
 txHtml+='<div class="card"><div class="row"><span>'+t.merchant_name+'</span><span class="badge '+(t.status==='active'?'active':'paid')+'">'+t.status.toUpperCase()+'</span></div><div class="row"><span>Amount</span><span>$'+t.amount_usd+'</span></div><div class="row"><span>Commission</span><span>$'+t.commission_amount+' ('+t.commission_rate+'%)</span></div><div class="row"><span>Merchant Payout</span><span>$'+t.merchant_payout+'</span></div></div>';
 });

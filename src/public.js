@@ -308,7 +308,7 @@ h2.section {
 
 <div class="tabs">
   <div class="tab active" onclick="showTab('demo')">Full Demo</div>
-  <div class="tab" onclick="showTab('score')">Trust Score</div>
+  <div class="tab" onclick="showTab('score')">Credit Tiers</div>
   <div class="tab" onclick="showTab('kyc')">eKYC</div>
   <div class="tab" onclick="showTab('merchant')">Merchant</div>
   <div class="tab" onclick="showTab('admin')">Admin</div>
@@ -342,12 +342,63 @@ h2.section {
 </div>
 </div>
 <div id="d-score-step" style="display:none" class="step">
-<strong>Step 4: Get Trust Score</strong>
+<strong>Step 4: Credit Evaluation &mdash; Choose Your Path</strong>
 <div style="margin-top:10px">
-<label>Monthly Income (USD)</label><input id="d-income" type="number" placeholder="1500">
-<label>Employment</label>
+
+<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+<div onclick="selectTier(1)" id="tier-btn-1" class="tier-card tier-selected" style="flex:1;min-width:140px;cursor:pointer;padding:12px;border-radius:var(--radius);border:2px solid var(--accent);background:rgba(6,214,242,0.08);text-align:center">
+<div style="font-size:20px;margin-bottom:4px">&#x1F4F1;</div>
+<div style="font-weight:700;color:var(--accent);font-size:13px">Tier 1: Starter</div>
+<div style="font-size:11px;color:var(--text-dim);margin-top:2px">No bank account needed</div>
+<div style="font-size:12px;color:var(--text);margin-top:4px;font-weight:600">$200 &ndash; $1,000</div>
+</div>
+<div onclick="selectTier(2)" id="tier-btn-2" class="tier-card" style="flex:1;min-width:140px;cursor:pointer;padding:12px;border-radius:var(--radius);border:2px solid var(--muted);background:var(--surface);text-align:center">
+<div style="font-size:20px;margin-bottom:4px">&#x1F3E6;</div>
+<div style="font-weight:700;color:var(--secondary);font-size:13px">Tier 2: Premium</div>
+<div style="font-size:11px;color:var(--text-dim);margin-top:2px">Top employer or debit card</div>
+<div style="font-size:12px;color:var(--text);margin-top:4px;font-weight:600">$500 &ndash; $2,000</div>
+</div>
+<div onclick="selectTier(3)" id="tier-btn-3" class="tier-card" style="flex:1;min-width:140px;cursor:pointer;padding:12px;border-radius:var(--radius);border:2px solid var(--muted);background:var(--surface);text-align:center">
+<div style="font-size:20px;margin-bottom:4px">&#x1F947;</div>
+<div style="font-weight:700;color:var(--warning);font-size:13px">Tier 3: Gold</div>
+<div style="font-size:11px;color:var(--text-dim);margin-top:2px">Gold collateral backed</div>
+<div style="font-size:12px;color:var(--text);margin-top:4px;font-weight:600">Up to gold value</div>
+</div>
+</div>
+
+<!-- Tier 1 fields (default) -->
+<div id="tier1-fields">
+<label>Employment Type</label>
 <select id="d-employment"><option value="salaried">Salaried</option><option value="self_employed">Self Employed</option><option value="freelance">Freelance</option></select>
-<button onclick="demoScore()">Calculate My Score</button>
+<label>Monthly Income (USD)</label><input id="d-income" type="number" placeholder="1500">
+</div>
+
+<!-- Tier 2 fields -->
+<div id="tier2-fields" style="display:none">
+<label>Employment Type</label>
+<select id="d-employment2"><option value="salaried">Salaried</option><option value="self_employed">Self Employed</option><option value="freelance">Freelance</option></select>
+<label>Employer</label>
+<select id="d-employer"><option value="">-- Select Employer --</option><option value="credit_libanais">Credit Libanais</option><option value="blom_bank">BLOM Bank</option><option value="azadea_group">Azadea Group</option><option value="touch">Touch (MIC1)</option><option value="alfa">Alfa (MIC2)</option><option value="mea">Middle East Airlines</option><option value="deloitte">Deloitte</option><option value="aub">American University of Beirut</option><option value="other">Other</option></select>
+<label>Monthly Income (USD)</label><input id="d-income2" type="number" placeholder="2500">
+<div style="margin:10px 0;padding:10px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--muted)">
+<label style="display:flex;align-items:center;gap:8px;margin:0;text-transform:none;cursor:pointer">
+<input type="checkbox" id="d-debit" style="width:auto;margin:0"> Link debit card for auto-settlement
+</label>
+<div id="d-debit-balance-wrap" style="display:none;margin-top:8px">
+<label>Card Balance (USD)</label><input id="d-debit-balance" type="number" placeholder="3000">
+</div>
+</div>
+</div>
+
+<!-- Tier 3 fields -->
+<div id="tier3-fields" style="display:none">
+<label>Gold Weight (grams)</label><input id="d-gold-grams" type="number" placeholder="50">
+<label>Trusted Partner</label>
+<select id="d-gold-partner"><option value="beirut_gold_souk">Beirut Gold Souk</option><option value="saifi_precious">Saifi Precious Metals</option><option value="hamra_jewelers">Hamra Jewelers</option></select>
+<p id="d-gold-estimate" style="color:var(--warning);font-size:13px;margin-top:4px;display:none"></p>
+</div>
+
+<button onclick="demoScore()">Evaluate My Credit</button>
 </div>
 </div>
 <div id="d-shop-step" style="display:none" class="step">
@@ -361,9 +412,32 @@ h2.section {
 <div id="d-result" class="result"></div>
 </div>
 
-<!-- TRUST SCORE -->
+<!-- TRUST SCORE / CREDIT TIERS -->
 <div id="score-panel" class="panel">
-<h2 class="section">Trust Score Engine</h2>
+<h2 class="section">Credit Tiers</h2>
+<div class="card" style="border-left:3px solid var(--accent)">
+<h3 style="color:var(--accent)">Tier 1 &mdash; Starter (Unbanked Access)</h3>
+<p style="font-size:13px;color:var(--text-dim);margin-bottom:8px">For users without a bank account</p>
+<div class="row"><span>Requirements</span><span style="text-align:right;font-size:12px">Credolab + Phone + ID + Employment</span></div>
+<div class="row"><span>Starting Limit</span><span><strong>$200</strong></span></div>
+<div class="row"><span>Max Limit</span><span><strong>$1,000</strong> (with repayment history)</span></div>
+</div>
+<div class="card" style="border-left:3px solid var(--secondary)">
+<h3 style="color:var(--secondary)">Tier 2 &mdash; Premium (Banked)</h3>
+<p style="font-size:13px;color:var(--text-dim);margin-bottom:8px">Top-tier employees or linked debit card</p>
+<div class="row"><span>Requirements</span><span style="text-align:right;font-size:12px">Tier 1 + Top Employer or Debit Card</span></div>
+<div class="row"><span>Starting Limit</span><span><strong>$500</strong></span></div>
+<div class="row"><span>Max Limit</span><span><strong>$2,000</strong> (with repayment history)</span></div>
+</div>
+<div class="card" style="border-left:3px solid var(--warning)">
+<h3 style="color:var(--warning)">Tier 3 &mdash; Gold Collateral</h3>
+<p style="font-size:13px;color:var(--text-dim);margin-bottom:8px">Backed by gold at Kaishen trusted partner</p>
+<div class="row"><span>Requirements</span><span style="text-align:right;font-size:12px">Phone + ID + Gold Deposit</span></div>
+<div class="row"><span>Limit</span><span><strong>Up to gold valuation</strong></span></div>
+<div class="row"><span>Gold Price</span><span>~$85/gram (live rate in production)</span></div>
+</div>
+
+<h2 class="section" style="margin-top:24px">Quick Score Check</h2>
 <label>Full Name</label><input id="s-name" placeholder="Ahmad Khalil">
 <label>Phone</label><input id="s-phone" placeholder="+9611234567">
 <label>Monthly Income (USD)</label><input id="s-income" type="number" placeholder="1500">
@@ -412,7 +486,7 @@ h2.section {
 </div>
 
 <script>
-var state={user:null,token:null,merchants:[]};
+var state={user:null,token:null,merchants:[],selectedTier:1};
 
 function showTab(t){
 document.querySelectorAll('.tab').forEach(function(e){e.classList.remove('active')});
@@ -422,6 +496,33 @@ event.target.classList.add('active');
 if(t==='merchant')loadMerchants();
 if(t==='admin')loadAdmin();
 }
+
+function selectTier(n){
+state.selectedTier=n;
+[1,2,3].forEach(function(i){
+var btn=document.getElementById('tier-btn-'+i);
+var colors={1:'var(--accent)',2:'var(--secondary)',3:'var(--warning)'};
+var bgs={1:'rgba(6,214,242,0.08)',2:'rgba(124,58,237,0.08)',3:'rgba(245,166,35,0.08)'};
+if(i===n){btn.style.borderColor=colors[i];btn.style.background=bgs[i];}
+else{btn.style.borderColor='var(--muted)';btn.style.background='var(--surface)';}
+});
+document.getElementById('tier1-fields').style.display=n===1?'block':'none';
+document.getElementById('tier2-fields').style.display=n===2?'block':'none';
+document.getElementById('tier3-fields').style.display=n===3?'block':'none';
+}
+
+// Debit card checkbox toggle
+document.addEventListener('DOMContentLoaded',function(){
+var cb=document.getElementById('d-debit');
+if(cb)cb.addEventListener('change',function(){document.getElementById('d-debit-balance-wrap').style.display=this.checked?'block':'none';});
+var gg=document.getElementById('d-gold-grams');
+if(gg)gg.addEventListener('input',function(){
+var g=parseFloat(this.value)||0;
+var est=document.getElementById('d-gold-estimate');
+if(g>0){est.style.display='block';est.textContent='Estimated credit limit: $'+(g*85).toLocaleString()+' (at ~$85/gram)';}
+else{est.style.display='none';}
+});
+});
 
 async function api(path,method,body){
 var opts={method:method||'GET',headers:{'Content-Type':'application/json'}};
@@ -458,12 +559,47 @@ showResult('d-result','<strong>Identity Verified \\u2705</strong><br>'+checks,'s
 }else{showResult('d-result','Verification failed. Please try again.','reject');}
 }
 async function demoScore(){
-var r=await api('/score','POST',{user_id:state.user.id,full_name:state.user.full_name,phone:state.user.phone,monthly_income:Number(document.getElementById('d-income').value),employment_type:document.getElementById('d-employment').value,credolab_id:'demo_credo'});
-state.user.trust_score=r.trust_score;state.user.credit_limit=r.band.max_credit_usd;
+var body={user_id:state.user.id,full_name:state.user.full_name,phone:state.user.phone,credolab_id:'demo_credo'};
+if(state.selectedTier===1){
+body.employment_type=document.getElementById('d-employment').value;
+body.monthly_income=Number(document.getElementById('d-income').value);
+}else if(state.selectedTier===2){
+body.employment_type=document.getElementById('d-employment2').value;
+body.employer_id=document.getElementById('d-employer').value;
+body.monthly_income=Number(document.getElementById('d-income2').value);
+if(document.getElementById('d-debit').checked){
+body.debit_card_linked=true;
+body.debit_card_balance=Number(document.getElementById('d-debit-balance').value)||0;
+}
+}else if(state.selectedTier===3){
+body.gold_grams=Number(document.getElementById('d-gold-grams').value)||0;
+body.gold_partner=document.getElementById('d-gold-partner').value;
+}
+var r=await api('/score','POST',body);
+state.user.trust_score=r.trust_score;state.user.credit_limit=r.credit_limit||r.band.max_credit_usd;
 document.getElementById('d-score-step').classList.add('done');
 document.getElementById('d-shop-step').style.display='block';
 await loadMerchantDropdown();
-showResult('d-result','<strong>Trust Score: '+r.trust_score+'/100</strong> \\u2014 '+r.band.label.toUpperCase()+'<br>Credit Limit: <strong>$'+r.band.max_credit_usd+'</strong>',r.band.label);
+var tierColors={1:'var(--accent)',2:'var(--secondary)',3:'var(--warning)'};
+var tierC=tierColors[state.selectedTier]||'var(--accent)';
+var html='<div style="margin-bottom:8px"><span style="display:inline-block;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;background:'+tierC+';color:var(--primary)">'+
+(r.tier?r.tier.label:'Tier '+state.selectedTier)+'</span></div>';
+html+='<strong style="font-size:18px">Credit Limit: $'+(r.credit_limit||r.band.max_credit_usd)+'</strong>';
+if(r.approved===false){
+html='<strong>Not Approved</strong><br>';
+if(r.breakdown&&r.breakdown.missing_requirements){html+='<p style="margin-top:6px">Missing: '+r.breakdown.missing_requirements.join(', ')+'</p>';}
+showResult('d-result',html,'reject');return;
+}
+if(r.breakdown){
+html+='<div style="margin-top:10px;font-size:12px;color:var(--text-dim)">';
+if(r.breakdown.tier_reason)html+='<div>'+r.breakdown.tier_reason+'</div>';
+if(r.breakdown.credolab_score!=null)html+='<div>Credolab Score: '+r.breakdown.credolab_score+'/100</div>';
+if(r.breakdown.gold_valuation_usd)html+='<div>Gold Valuation: $'+r.breakdown.gold_valuation_usd+' ('+r.breakdown.gold_grams+'g)</div>';
+if(r.breakdown.repayment_bonus)html+='<div>Repayment Bonus: '+r.breakdown.repayment_bonus+'</div>';
+html+='</div>';
+}
+var cls=state.selectedTier===1?'good':state.selectedTier===2?'excellent':'fair';
+showResult('d-result',html,cls);
 }
 async function loadMerchantDropdown(){
 var ms=await api('/merchants');state.merchants=ms;

@@ -1,76 +1,234 @@
 /**
- * Trust Engine v0.1 — MVP Mock
+ * Kaishen Trust Engine v0.2 — Three-Tier Credit System
  *
- * In production this will combine:
- *   1. Credolab behavioral score (phone metadata)
- *   2. Income verification
- *   3. Merchant-vouching / social graph
- *   4. Transaction history
+ * TIER 1 — UNBANKED (no bank account)
+ *   Requirements: Credolab score + Phone verification + ID verification + Employment details
+ *   Starting limit: $200 USD
+ *   Growth: Up to $1,000 USD based on repayment history
  *
- * For now: weighted random with slight bias from available inputs.
+ * TIER 2 — BANKED / PREMIUM EMPLOYEE
+ *   Requirements: Tier 1 + (Top-tier employer OR linked debit card with sufficient funds)
+ *   Starting limit: $500 USD
+ *   Growth: Up to $2,000 USD
+ *
+ * TIER 3 — GOLD COLLATERAL
+ *   Requirements: Gold deposited at Kaishen trusted partner
+ *   Limit: Up to the valuation of deposited gold
+ *   No ceiling — depends on collateral value
  */
 
-const BANDS = {
-  EXCELLENT: { min: 80, label: 'excellent', maxCredit: 5000 },
-  GOOD:     { min: 60, label: 'good',      maxCredit: 2500 },
-  FAIR:     { min: 40, label: 'fair',       maxCredit: 1000 },
-  POOR:     { min: 20, label: 'poor',       maxCredit: 250  },
-  REJECT:   { min: 0,  label: 'reject',     maxCredit: 0    },
+// ── Tier Definitions ──────────────────────────────────────────────
+const TIERS = {
+  TIER_1: {
+    id: 1,
+    name: 'Starter',
+    label: 'Unbanked Access',
+    description: 'For users without a bank account — verified via Credolab, phone, ID, and employment',
+    min_limit: 200,
+    max_limit: 1000,
+    starting_limit: 200,
+    color: '#06D6F2',
+    requirements: ['phone_verified', 'id_verified', 'credolab_scored', 'employment_provided'],
+  },
+  TIER_2: {
+    id: 2,
+    name: 'Premium',
+    label: 'Banked / Premium Employee',
+    description: 'For top-tier employees or users with a linked debit card',
+    min_limit: 500,
+    max_limit: 2000,
+    starting_limit: 500,
+    color: '#7C3AED',
+    requirements: ['phone_verified', 'id_verified', 'credolab_scored', 'employment_provided', 'tier2_qualifier'],
+  },
+  TIER_3: {
+    id: 3,
+    name: 'Gold',
+    label: 'Gold Collateral',
+    description: 'Credit backed by gold deposited at a Kaishen trusted partner',
+    min_limit: 0,
+    max_limit: Infinity,
+    starting_limit: 0,
+    color: '#F5A623',
+    requirements: ['phone_verified', 'id_verified', 'gold_collateral'],
+  },
 };
 
-function getBand(score) {
-  if (score >= 80) return BANDS.EXCELLENT;
-  if (score >= 60) return BANDS.GOOD;
-  if (score >= 40) return BANDS.FAIR;
-  if (score >= 20) return BANDS.POOR;
-  return BANDS.REJECT;
+// ── Top-tier employers (mock list — would be configurable in production) ──
+const TOP_TIER_EMPLOYERS = [
+  'credit_libanais', 'blom_bank', 'byblos_bank', 'audi_bank',
+  'azadea_group', 'abc_group', 'mea', 'ogero', 'touch', 'alfa',
+  'deloitte', 'pwc', 'kpmg', 'ey', 'mckinsey',
+  'aub', 'lau', 'usj', 'usek',
+  'solidere', 'mikati_foundation',
+];
+
+// ── Gold price reference (mock — would come from API in production) ──
+const GOLD_USD_PER_GRAM = 85; // approximate price per gram
+
+// ── Repayment history multiplier ──
+// Each on-time payment increases available limit within tier range
+function calculateRepaymentBonus(completedPayments, onTimePayments) {
+  if (completedPayments === 0) return 0;
+  const onTimeRatio = onTimePayments / completedPayments;
+  // Each completed payment adds ~5% growth, scaled by on-time ratio
+  const growthFactor = Math.min(1, completedPayments * 0.05) * onTimeRatio;
+  return growthFactor;
 }
 
+// ── Credolab Score Thresholds ──
+function credolabPassesThreshold(normalizedScore) {
+  // Credolab normalized 0-100; we require at least 30 to approve
+  return normalizedScore >= 30;
+}
+
+// ── Tier Determination ──────────────────────────────────────────
 /**
- * Calculate a mock Trust Score.
+ * Determine which tier a user qualifies for and their credit limit.
  *
- * @param {Object} data - User data payload
- * @returns {{ score: number, band: object, breakdown: object }}
+ * @param {Object} data
+ * @param {boolean} data.phone_verified
+ * @param {boolean} data.id_verified
+ * @param {number}  data.credolab_score       — normalized 0-100
+ * @param {string}  data.employment_type      — salaried | self_employed | freelance
+ * @param {string}  data.employer_id          — employer identifier (lowercase, underscored)
+ * @param {number}  data.employer_tier        — 1 (top) or 2 (second tier) or null
+ * @param {boolean} data.debit_card_linked    — whether they linked a debit card
+ * @param {number}  data.debit_card_balance   — balance on linked card (USD)
+ * @param {number}  data.gold_grams           — grams of gold deposited as collateral
+ * @param {string}  data.gold_partner         — trusted partner name
+ * @param {number}  data.completed_payments   — historical completed payments
+ * @param {number}  data.on_time_payments     — historical on-time payments
+ * @param {number}  data.monthly_income       — declared monthly income (USD)
+ *
+ * @returns {Object} { approved, tier, credit_limit, checks, breakdown }
  */
-function calculate(data) {
-  // Base random score (0-100)
-  let base = Math.random() * 100;
+function evaluate(data) {
+  const checks = {
+    phone_verified: !!data.phone_verified,
+    id_verified: !!data.id_verified,
+    credolab_scored: data.credolab_score != null && credolabPassesThreshold(data.credolab_score),
+    employment_provided: !!data.employment_type,
+    top_tier_employer: !!(data.employer_tier && data.employer_tier <= 2) || TOP_TIER_EMPLOYERS.includes((data.employer_id || '').toLowerCase()),
+    debit_card_linked: !!data.debit_card_linked && (data.debit_card_balance || 0) > 0,
+    gold_collateral: (data.gold_grams || 0) > 0 && !!data.gold_partner,
+  };
 
-  // Slight boosts for providing optional data (rewarding completeness)
-  const completenessBonus =
-    (data.monthly_income ? 5 : 0) +
-    (data.employment_type ? 5 : 0) +
-    (data.credolab_id ? 10 : 0);
+  // Derived qualifier for Tier 2
+  checks.tier2_qualifier = checks.top_tier_employer || checks.debit_card_linked;
 
-  // Employment type heuristic (mock)
-  const employmentBonus =
-    data.employment_type === 'salaried' ? 8 :
-    data.employment_type === 'self_employed' ? 3 :
-    data.employment_type === 'freelance' ? 2 : 0;
+  const repaymentBonus = calculateRepaymentBonus(
+    data.completed_payments || 0,
+    data.on_time_payments || 0
+  );
 
-  // Income heuristic (mock — assumes USD monthly)
-  const incomeBonus = data.monthly_income
-    ? Math.min(10, data.monthly_income / 500)
-    : 0;
+  // ── Check Tier 3 first (gold collateral) ──
+  if (checks.phone_verified && checks.id_verified && checks.gold_collateral) {
+    const goldValue = Math.round((data.gold_grams || 0) * GOLD_USD_PER_GRAM);
+    return {
+      approved: true,
+      tier: TIERS.TIER_3,
+      credit_limit: goldValue,
+      checks,
+      breakdown: {
+        tier_reason: 'Gold collateral deposited at ' + data.gold_partner,
+        gold_grams: data.gold_grams,
+        gold_price_per_gram: GOLD_USD_PER_GRAM,
+        gold_valuation_usd: goldValue,
+        credit_limit: goldValue,
+        note: 'Credit limit equals gold collateral valuation',
+      },
+    };
+  }
 
-  const raw = base + completenessBonus + employmentBonus + incomeBonus;
-  const score = Math.round(Math.min(100, Math.max(0, raw)));
-  const band = getBand(score);
+  // ── Check Tier 2 (banked / premium employee) ──
+  if (checks.phone_verified && checks.id_verified && checks.credolab_scored && checks.employment_provided && checks.tier2_qualifier) {
+    const tier = TIERS.TIER_2;
+    const range = tier.max_limit - tier.starting_limit;
+    const limit = Math.round(tier.starting_limit + (range * repaymentBonus));
+    const qualifierReason = checks.top_tier_employer
+      ? 'Top-tier employer: ' + (data.employer_id || 'verified')
+      : 'Linked debit card with $' + (data.debit_card_balance || 0) + ' balance';
+
+    return {
+      approved: true,
+      tier,
+      credit_limit: Math.min(tier.max_limit, Math.max(tier.starting_limit, limit)),
+      checks,
+      breakdown: {
+        tier_reason: qualifierReason,
+        credolab_score: data.credolab_score,
+        employment_type: data.employment_type,
+        repayment_bonus: Math.round(repaymentBonus * 100) + '%',
+        completed_payments: data.completed_payments || 0,
+        on_time_payments: data.on_time_payments || 0,
+        starting_limit: tier.starting_limit,
+        max_limit: tier.max_limit,
+        note: 'Limit grows with on-time repayment history',
+      },
+    };
+  }
+
+  // ── Check Tier 1 (unbanked) ──
+  if (checks.phone_verified && checks.id_verified && checks.credolab_scored && checks.employment_provided) {
+    const tier = TIERS.TIER_1;
+    const range = tier.max_limit - tier.starting_limit;
+    const limit = Math.round(tier.starting_limit + (range * repaymentBonus));
+
+    return {
+      approved: true,
+      tier,
+      credit_limit: Math.min(tier.max_limit, Math.max(tier.starting_limit, limit)),
+      checks,
+      breakdown: {
+        tier_reason: 'Unbanked access — verified via Credolab + ID + employment',
+        credolab_score: data.credolab_score,
+        employment_type: data.employment_type,
+        monthly_income: data.monthly_income || 'not disclosed',
+        repayment_bonus: Math.round(repaymentBonus * 100) + '%',
+        completed_payments: data.completed_payments || 0,
+        on_time_payments: data.on_time_payments || 0,
+        starting_limit: tier.starting_limit,
+        max_limit: tier.max_limit,
+        note: 'Limit grows with on-time repayment history (up to $1,000)',
+      },
+    };
+  }
+
+  // ── Not approved — missing requirements ──
+  const missing = [];
+  if (!checks.phone_verified) missing.push('Phone verification');
+  if (!checks.id_verified) missing.push('ID verification (eKYC)');
+  if (!checks.credolab_scored) missing.push('Credolab behavioral score (min 30/100)');
+  if (!checks.employment_provided) missing.push('Employment details');
 
   return {
-    score,
-    band: {
-      label: band.label,
-      max_credit_usd: band.maxCredit,
-    },
+    approved: false,
+    tier: null,
+    credit_limit: 0,
+    checks,
     breakdown: {
-      base_score: Math.round(base),
-      completeness_bonus: completenessBonus,
-      employment_bonus: employmentBonus,
-      income_bonus: Math.round(incomeBonus * 10) / 10,
-      note: 'MVP mock — will be replaced with real scoring model',
+      tier_reason: 'Not eligible — missing requirements',
+      missing_requirements: missing,
+      credolab_score: data.credolab_score || null,
+      note: 'Complete all verifications to qualify for Tier 1 ($200 starting limit)',
     },
   };
 }
 
-module.exports = { calculate, getBand, BANDS };
+// ── Legacy compatibility: simple score (for display) ──
+function calculateDisplayScore(data) {
+  let score = 0;
+  if (data.phone_verified) score += 15;
+  if (data.id_verified) score += 20;
+  if (data.credolab_score) score += Math.round(data.credolab_score * 0.3);
+  if (data.employment_type === 'salaried') score += 15;
+  else if (data.employment_type === 'self_employed') score += 10;
+  else if (data.employment_type === 'freelance') score += 7;
+  if (data.monthly_income) score += Math.min(10, Math.round(data.monthly_income / 200));
+  if (data.debit_card_linked) score += 5;
+  if (data.gold_grams > 0) score += 5;
+  return Math.min(100, Math.max(0, score));
+}
+
+module.exports = { evaluate, calculateDisplayScore, TIERS, TOP_TIER_EMPLOYERS, GOLD_USD_PER_GRAM };

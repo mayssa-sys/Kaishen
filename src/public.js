@@ -19,8 +19,8 @@ const html = `<!DOCTYPE html>
   --success: ${COLORS.success};
   --warning: ${COLORS.warning};
   --danger: ${COLORS.danger};
-  --gold-grad: linear-gradient(135deg, #C9A84C 0%, #E8D48B 50%, #C9A84C 100%);
-  --navy-grad: linear-gradient(180deg, #0B1D3A 0%, #111B2E 100%);
+  --gold-grad: linear-gradient(135deg, #7C3AED 0%, #06D6F2 100%);
+  --navy-grad: linear-gradient(180deg, #0D0F13 0%, #161921 100%);
   --radius: 8px;
   --radius-lg: 12px;
   --shadow: 0 4px 24px rgba(0,0,0,0.3);
@@ -39,7 +39,7 @@ body {
   text-align: center;
   padding: 28px 20px 22px;
   background: var(--primary);
-  border-bottom: 1px solid rgba(201,168,76,0.15);
+  border-bottom: 1px solid rgba(124,58,237,0.15);
   position: relative;
 }
 .header::after {
@@ -48,7 +48,7 @@ body {
   bottom: 0; left: 0; right: 0;
   height: 2px;
   background: var(--gold-grad);
-  opacity: 0.5;
+  opacity: 0.6;
 }
 .logo-container {
   display: flex;
@@ -76,13 +76,13 @@ body {
 }
 .mvp-badge {
   display: inline-block;
-  background: rgba(201,168,76,0.15);
+  background: rgba(124,58,237,0.12);
   color: var(--secondary);
   padding: 3px 10px;
   border-radius: 4px;
   font-size: 11px;
   margin-top: 8px;
-  border: 1px solid rgba(201,168,76,0.3);
+  border: 1px solid rgba(124,58,237,0.3);
   letter-spacing: 1px;
   font-weight: 600;
 }
@@ -139,7 +139,7 @@ input, select {
 input:focus, select:focus {
   outline: none;
   border-color: var(--secondary);
-  box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
 }
 input::placeholder { color: var(--muted); }
 button {
@@ -169,7 +169,7 @@ button.secondary {
   box-shadow: none;
 }
 button.secondary:hover {
-  background: rgba(201,168,76,0.1);
+  background: rgba(124,58,237,0.1);
   transform: none;
 }
 .result {
@@ -225,7 +225,7 @@ button.secondary:hover {
 }
 .badge.paid { background: var(--success); color: #fff; }
 .badge.upcoming { background: var(--warning); color: var(--primary); }
-.badge.active { background: var(--accent); color: var(--primary); }
+.badge.active { background: var(--accent); color: var(--primary); font-weight: 700; }
 h2.section {
   color: var(--secondary);
   font-size: 20px;
